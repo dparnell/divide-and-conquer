@@ -177,24 +177,116 @@ function ask(m) {
     var btn = t(e("button"), "Okay");
     a(dlg, btn);
 
-    btn.onclick = function() {
+    function done() {
         if(txt.value) {
             kill(dlg).then(function() {
                 result.resolve(txt.value);
             });
         }
-    };
+    }
+
+    btn.onclick = done;
 
     a(document.body, dlg);
+    txt.focus();
+    txt.onkeypress = function(e) {
+        if(e.keyCode == 13) {
+            done();
+        }
+    };
 
     return result;
 }
 
+function shuffle(array) {
+    // stolen from here: https://www.frankmitchell.org/2015/01/fisher-yates/
+    var i = 0, j = 0, temp = null;
+    for (i = array.length - 1; i > 0; i -= 1) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
+    return array;
+}
+
 function play_game(table) {
     var result = new P();
-    ask("Play Game - " + table).then(function(value) {
-        result.resolve(value);
-    });
+    var i, questions;
+
+    questions = [];
+    for(i = 1; i < 13; i++) {
+        questions.push(i);
+    }
+    shuffle(questions);
+
+    function the_time() {
+        return (new Date()).getTime() / 1000;
+    }
+
+    var dlg = e("div", {class: "ask dialog visible"});
+    var h1 = e("h1");
+    a(dlg, h1);
+    var txt = e("input", {type: "text"});
+    a(dlg, txt);
+    var btn = t(e("button"), "Okay");
+    a(dlg, btn);
+
+
+    var results = [];
+    var question = null;
+    var start_time = null;
+
+    function done() {
+        if(txt.value) {
+            var end_time = the_time();
+
+            results.push({
+                question: (question * table) + " / " + table,
+                answer: Number(txt.value),
+                correct_answer: question,
+                time_taken: end_time - start_time
+            });
+            next_question();
+        }
+    }
+
+    btn.onclick = done;
+
+    a(document.body, dlg);
+    txt.focus();
+    txt.onkeydown = function(e) {
+        if(e.keyCode == 8 || e.keyCode == 13 || (e.keyCode >= 48 && e.keyCode <= 57)) {
+            // do nothing;
+        } else {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
+    txt.onkeypress = function(e) {
+        if(e.keyCode == 13) {
+            done();
+        }
+    };
+
+    function next_question() {
+        if(questions.length === 0) {
+            kill(dlg).then(function() {
+                result.resolve({table: table, results: results});
+            });
+        } else {
+            question = questions.pop();
+            start_time = the_time();
+
+            t(h1, "What is " + (question * table) + " divided by " + table + "?");
+            txt.value = "";
+            txt.focus();
+        }
+    }
+
+    next_question();
 
     return result;
 }
@@ -222,9 +314,46 @@ function show_menu(player_name) {
     return result;
 }
 
+function format(n) {
+    return n.toFixed(2);
+}
+
 function game_loop(player_name) {
-    show_menu(player_name).then(play_game).then(function() {
-        game_loop(player_name);
+    show_menu(player_name).then(play_game).then(function(results) {
+        // TODO: store the results somewhere
+        // console.info(results);
+
+        var dlg = e("div", {class: "ask dialog visible"});
+        var h1 = e("h1");
+        var answer, result, is_correct, correct_count;
+        a(dlg, h1);
+
+        correct_count = 12;
+        for(var i=0; i<12; i++) {
+            result = results.results[i];
+            is_correct = result.answer == result.correct_answer;
+            if(!is_correct) {
+                correct_count--;
+            }
+            answer = e("div", {class: is_correct ? "correct" : "wrong"});
+            a(dlg, t(answer, result.question + " = " + result.answer + " in " + format(result.time_taken) + "s"));
+        }
+
+        if(correct_count == 12) {
+            t(h1, "Congratulations. You got them all correct!");
+        } else {
+            t(h1, "You got " + correct_count + " out of 12 correct");
+        }
+
+        var btn = t(e("button"), "Okay");
+        a(dlg, btn);
+        btn.onclick = function() {
+            kill(dlg).then(function() {
+                game_loop(player_name);
+            });
+        };
+
+        a(document.body, dlg);
     });
 }
 
