@@ -4,7 +4,7 @@
 
 body {
     background-color: black;
-    color: white;
+    color: #d2cdc5;
     font-family: 'Arial Narrow', sans-serif;
 }
 
@@ -32,7 +32,7 @@ body {
 
 .dialog {
     position: absolute;
-    background-color: #ccc;
+    background-color: #5d5555;
     left: 25%;
     width: 50%;
     padding-bottom: 1em;
@@ -76,7 +76,7 @@ body {
 }
 
 .wrong {
-    color: red;
+    color: #ff6262;
     font-weight: bold;
 }
 
