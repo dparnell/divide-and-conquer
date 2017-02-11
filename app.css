@@ -1,0 +1,68 @@
+/*
+  CSS
+*/
+
+body {
+    background-color: black;
+    color: white;
+}
+
+@keyframes appear {
+    from { opacity: 0 }
+    to { opacity: 100% }
+}
+
+@keyframes hide {
+    from { opacity: 100% }
+    to { opacity: 0 }
+}
+
+.visible {
+    animation-name: appear;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+}
+
+.hidden {
+    animation-name: hide;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+}
+
+.dialog {
+    position: absolute;
+    background-color: #ccc;
+    top: 25%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
+}
+
+.dialog h1 {
+    text-align: center;
+    border-bottom: double 3px;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    margin: 0;
+}
+
+.ask {
+    font-size: 200%;
+    text-align: center;
+}
+
+.ask input {
+    font-size: 200%;
+    text-align: center;
+    background: none;
+    border: solid 1px black;
+    width: 90%;
+    margin-left: 5%;
+    margin-top: 0.5em;
+}
+
+.ask button {
+    clear: both;
+    margin-top: 0.25em;
+    font-size: 150%;
+}
