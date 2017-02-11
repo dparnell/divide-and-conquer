@@ -4,7 +4,7 @@
 
 
 /*
-	By Osvaldas Valutis, www.osvaldas.info
+	Based code by Osvaldas Valutis, www.osvaldas.info
 	Available for use under the MIT License
 */
 
@@ -12,37 +12,25 @@
 {
 	  var s = (document.body || document.documentElement).style, prefixAnimation = "", prefixTransition = "";
 
-	if( s.WebkitAnimation === "" )	prefixAnimation	 = "-webkit-";
-	if( s.MozAnimation === "" )		prefixAnimation	 = "-moz-";
-	if( s.OAnimation === "" )		prefixAnimation	 = "-o-";
+	  if( s.WebkitAnimation === "" )	prefixAnimation	 = "-webkit-";
+	  if( s.MozAnimation === "" )		prefixAnimation	 = "-moz-";
+	  if( s.OAnimation === "" )		prefixAnimation	 = "-o-";
 
-	if( s.WebkitTransition === "" )	prefixTransition = "-webkit-";
-	if( s.MozTransition === "" )		prefixTransition = "-moz-";
-	if( s.OTransition === "" )		prefixTransition = "-o-";
+	  if( s.WebkitTransition === "" )	prefixTransition = "-webkit-";
+	  if( s.MozTransition === "" )		prefixTransition = "-moz-";
+	  if( s.OTransition === "" )		prefixTransition = "-o-";
 
-	Object.prototype.onCSSAnimationEnd = function( callback )
-	{
-		var runOnce = function( e ){ callback(); e.target.removeEventListener( e.type, runOnce ); };
-		this.addEventListener( "webkitAnimationEnd", runOnce );
-		this.addEventListener( "mozAnimationEnd", runOnce );
-		this.addEventListener( "oAnimationEnd", runOnce );
-		this.addEventListener( "oanimationend", runOnce );
-		this.addEventListener( "animationend", runOnce );
-		if( ( prefixAnimation === "" && !( "animation" in s ) ) || getComputedStyle( this )[ prefixAnimation + "animation-duration" ] == "0s" ) callback();
-		return this;
-	};
-
-	Object.prototype.onCSSTransitionEnd = function( callback )
-	{
-		var runOnce = function( e ){ callback(); e.target.removeEventListener( e.type, runOnce ); };
-		this.addEventListener( "webkitTransitionEnd", runOnce );
-		this.addEventListener( "mozTransitionEnd", runOnce );
-		this.addEventListener( "oTransitionEnd", runOnce );
-		this.addEventListener( "transitionend", runOnce );
-		this.addEventListener( "transitionend", runOnce );
-		if( ( prefixTransition === "" && !( "transition" in s ) ) || getComputedStyle( this )[ prefixTransition + "transition-duration" ] == "0s" ) callback();
-		return this;
-	};
+	  window.onCSSAnimationEnd = function( that, callback )
+	  {
+		    var runOnce = function( e ){ callback(); e.target.removeEventListener( e.type, runOnce ); };
+		    that.addEventListener( "webkitAnimationEnd", runOnce );
+		    that.addEventListener( "mozAnimationEnd", runOnce );
+		    that.addEventListener( "oAnimationEnd", runOnce );
+		    that.addEventListener( "oanimationend", runOnce );
+		    that.addEventListener( "animationend", runOnce );
+		    if( ( prefixAnimation === "" && !( "animation" in s ) ) || getComputedStyle( that )[ prefixAnimation + "animation-duration" ] == "0s" ) callback();
+		    return that;
+	  };
 }( document, window, 0 ));
 
 // append an element
@@ -160,7 +148,7 @@ function removeClass(e, c) {
 function kill(e) {
     var result = new P();
     addClass(e, "fade");
-    e.onCSSAnimationEnd(function() {
+    onCSSAnimationEnd(e, function() {
         r(e);
         result.resolve();
     });
