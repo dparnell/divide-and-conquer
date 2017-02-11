@@ -5,6 +5,7 @@
 body {
     background-color: black;
     color: white;
+    font: 'Arial Narrow', sans-serif;
 }
 
 @keyframes appear {
