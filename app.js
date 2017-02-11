@@ -158,12 +158,14 @@ function removeClass(e, c) {
 }
 
 function kill(e) {
-    addClass(e, "hidden");
+    var result = new P();
+    addClass(e, "fade");
     e.onCSSAnimationEnd(function() {
         r(e);
+        result.resolve();
     });
 
-    return e;
+    return result;
 }
 
 function ask(m) {
@@ -177,8 +179,9 @@ function ask(m) {
 
     btn.onclick = function() {
         if(txt.value) {
-            result.resolve(txt.value);
-            kill(dlg);
+            kill(dlg).then(function() {
+                result.resolve(txt.value);
+            });
         }
     };
 
@@ -189,7 +192,7 @@ function ask(m) {
 
 function play_game(table) {
     var result = new P();
-    ask("Play Game").then(function(value) {
+    ask("Play Game - " + table).then(function(value) {
         result.resolve(value);
     });
 
@@ -198,9 +201,24 @@ function play_game(table) {
 
 function show_menu(player_name) {
     var result = new P();
-    ask("Show Menu - " + player_name).then(function(value) {
-        result.resolve(value);
-    });
+    var dlg = e("div", {class: "menu dialog visible"});
+    a(dlg, t(e("h1"), "Hi " + player_name+"! Choose your divisor"));
+
+    function make_menu_item(index) {
+        var btn = t(e("button"), index);
+        btn.onclick = function() {
+            kill(dlg).then(function() {
+                result.resolve(index);
+            });
+        };
+        a(dlg, btn);
+    }
+
+    for(var i = 1; i <= 12; i++) {
+        make_menu_item(i);
+    }
+
+    a(document.body, dlg);
     return result;
 }
 

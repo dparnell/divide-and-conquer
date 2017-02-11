@@ -23,7 +23,7 @@ body {
     animation-iteration-count: 1;
 }
 
-.hidden {
+.fade {
     animation-name: hide;
     animation-duration: 0.5s;
     animation-iteration-count: 1;
@@ -65,4 +65,12 @@ body {
     clear: both;
     margin-top: 0.25em;
     font-size: 150%;
+}
+
+
+.menu button {
+    font-size: 200%;
+    width: 30%;
+    margin-left: 10%;
+    margin-top: 0.25em;
 }
