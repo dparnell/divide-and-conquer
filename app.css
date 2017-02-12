@@ -67,12 +67,22 @@ body {
     font-size: 150%;
 }
 
-
 .menu button {
     font-size: 200%;
     width: 30%;
     margin-left: 10%;
     margin-top: 0.25em;
+}
+
+.results {
+    font-size: 200%;
+    text-align: center;
+}
+
+.results button {
+    clear: both;
+    margin-top: 0.25em;
+    font-size: 150%;
 }
 
 .wrong {

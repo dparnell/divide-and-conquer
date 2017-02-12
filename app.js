@@ -2,36 +2,39 @@
  * Application JS here
  */
 
-
 /*
-	Based code by Osvaldas Valutis, www.osvaldas.info
-	Available for use under the MIT License
+  Base on CSS Animation code by Osvaldas Valutis, www.osvaldas.info
+  Available for use under the MIT License
 */
 
 ;( function ( document, window, index )
-{
-	  var s = (document.body || document.documentElement).style, prefixAnimation = "", prefixTransition = "";
+   {
+       var s = (document.body || document.documentElement).style, prefixAnimation = "", prefixTransition = "";
 
-	  if( s.WebkitAnimation === "" )	prefixAnimation	 = "-webkit-";
-	  if( s.MozAnimation === "" )		prefixAnimation	 = "-moz-";
-	  if( s.OAnimation === "" )		prefixAnimation	 = "-o-";
+       if( s.WebkitAnimation === "" ) prefixAnimation  = "-webkit-";
+       if( s.MozAnimation === "" )    prefixAnimation  = "-moz-";
+       if( s.OAnimation === "" )    prefixAnimation  = "-o-";
 
-	  if( s.WebkitTransition === "" )	prefixTransition = "-webkit-";
-	  if( s.MozTransition === "" )		prefixTransition = "-moz-";
-	  if( s.OTransition === "" )		prefixTransition = "-o-";
+       if( s.WebkitTransition === "" )  prefixTransition = "-webkit-";
+       if( s.MozTransition === "" )   prefixTransition = "-moz-";
+       if( s.OTransition === "" )   prefixTransition = "-o-";
 
-	  window.onCSSAnimationEnd = function( that, callback )
-	  {
-		    var runOnce = function( e ){ callback(); e.target.removeEventListener( e.type, runOnce ); };
-		    that.addEventListener( "webkitAnimationEnd", runOnce );
-		    that.addEventListener( "mozAnimationEnd", runOnce );
-		    that.addEventListener( "oAnimationEnd", runOnce );
-		    that.addEventListener( "oanimationend", runOnce );
-		    that.addEventListener( "animationend", runOnce );
-		    if( ( prefixAnimation === "" && !( "animation" in s ) ) || getComputedStyle( that )[ prefixAnimation + "animation-duration" ] == "0s" ) callback();
-		    return that;
-	  };
-}( document, window, 0 ));
+       window.onCSSAnimationEnd = function( that, callback )
+       {
+           var runOnce = function( e ){ callback(); e.target.removeEventListener( e.type, runOnce ); };
+           that.addEventListener( "webkitAnimationEnd", runOnce );
+           that.addEventListener( "mozAnimationEnd", runOnce );
+           that.addEventListener( "oAnimationEnd", runOnce );
+           that.addEventListener( "oanimationend", runOnce );
+           that.addEventListener( "animationend", runOnce );
+           if( ( prefixAnimation === "" && !( "animation" in s ) ) || getComputedStyle( that )[ prefixAnimation + "animation-duration" ] == "0s" ) callback();
+           return that;
+       };
+   }( document, window, 0 ));
+
+/*
+ * Some simple DOM manipulation functions
+ */
 
 // append an element
 function a(p, e) {
@@ -68,7 +71,22 @@ function e(type, atts) {
     return element;
 }
 
-// a simple promise
+function addClass(e, c) {
+    e.setAttribute("class", e.getAttribute("class") + " " + c);
+
+    return e;
+}
+
+function removeClass(e, c) {
+    var klasses = e.getAttribute("class").split(" ");
+    e.setAttribute("class", klasses.filter(function(klass) { return klass != c; }).join(" "));
+    return e;
+}
+
+/*
+ * A very simplistic promise object
+ */
+
 function P() {
     this.resolved_value = undefined;
     this.resolved = false;
@@ -133,17 +151,43 @@ P.prototype.reject = function(v) {
     return this;
 };
 
-function addClass(e, c) {
-    e.setAttribute("class", e.getAttribute("class") + " " + c);
+/*
+ * AJAX code
+ */
 
-    return e;
+function ajax(method, url, obj) {
+    var result = new P();
+
+    var xmlhttp;
+    if (window.XMLHttpRequest) {
+        xmlhttp = new XMLHttpRequest();
+    } else {
+        // code for older browsers
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function() {
+        if(this.readyState == 4) {
+            if(this.status >= 200 && this.status <= 299) {
+                result.resolve(this.responseText);
+            } else {
+                result.reject(this.responseText);
+            }
+        }
+    };
+    xmlhttp.open(method, url, true);
+    if(obj && method != "GET") {
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify(obj));
+    } else {
+        xmlhttp.send();
+    }
+
+    return result;
 }
 
-function removeClass(e, c) {
-    var klasses = e.getAttribute("class").split(" ");
-    e.setAttribute("class", klasses.filter(function(klass) { return klass != c; }).join(" "));
-    return e;
-}
+/*
+ * Utility functions
+ */
 
 function kill(e) {
     var result = new P();
@@ -198,6 +242,10 @@ function shuffle(array) {
 
     return array;
 }
+
+/*
+ *  The actual game starts here
+ */
 
 function play_game(table) {
     var result = new P();
@@ -306,42 +354,56 @@ function format(n) {
     return n.toFixed(2);
 }
 
+function show_results(results) {
+    var next = new P();
+
+    var dlg = e("div", {class: "results dialog visible"});
+    var h1 = e("h1");
+    var answer, result, is_correct, correct_count, total_time;
+    a(dlg, h1);
+
+    total_time = 0;
+    correct_count = 12;
+    for(var i=0; i<12; i++) {
+        result = results.results[i];
+        is_correct = result.answer == result.correct_answer;
+        if(!is_correct) {
+            correct_count--;
+        }
+        answer = e("div", {class: is_correct ? "correct" : "wrong"});
+        a(dlg, t(answer, result.question + " = " + result.answer + " in " + format(result.time_taken) + "s"));
+        total_time += result.time_taken;
+    }
+
+    a(dlg, t(e("div"), "You took " + format(total_time) + " seconds"));
+
+    if(correct_count == 12) {
+        t(h1, "Congratulations. You got them all correct!");
+    } else {
+        t(h1, "You got " + correct_count + " out of 12 correct");
+    }
+
+    var btn = t(e("button"), "Okay");
+    a(dlg, btn);
+    btn.onclick = function() {
+        kill(dlg).then(function() {
+            next.resolve();
+        });
+    };
+
+    a(document.body, dlg);
+
+    return next;
+}
+
 function game_loop(player_name) {
     show_menu(player_name).then(play_game).then(function(results) {
-        // TODO: store the results somewhere
+        results.player_name = player_name;
         // console.info(results);
 
-        var dlg = e("div", {class: "ask dialog visible"});
-        var h1 = e("h1");
-        var answer, result, is_correct, correct_count;
-        a(dlg, h1);
-
-        correct_count = 12;
-        for(var i=0; i<12; i++) {
-            result = results.results[i];
-            is_correct = result.answer == result.correct_answer;
-            if(!is_correct) {
-                correct_count--;
-            }
-            answer = e("div", {class: is_correct ? "correct" : "wrong"});
-            a(dlg, t(answer, result.question + " = " + result.answer + " in " + format(result.time_taken) + "s"));
-        }
-
-        if(correct_count == 12) {
-            t(h1, "Congratulations. You got them all correct!");
-        } else {
-            t(h1, "You got " + correct_count + " out of 12 correct");
-        }
-
-        var btn = t(e("button"), "Okay");
-        a(dlg, btn);
-        btn.onclick = function() {
-            kill(dlg).then(function() {
-                game_loop(player_name);
-            });
-        };
-
-        a(document.body, dlg);
+        show_results(results).then(function() {
+            game_loop(player_name);
+        });
     });
 }
 
