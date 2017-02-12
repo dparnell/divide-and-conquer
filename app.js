@@ -375,6 +375,11 @@ function show_results(results) {
         total_time += result.time_taken;
     }
 
+    result.correct_count = correct_count;
+    result.total_time = total_time;
+
+    // TODO: add code to store the updated results here
+
     a(dlg, t(e("div"), "You took " + format(total_time) + " seconds"));
 
     if(correct_count == 12) {
@@ -399,7 +404,6 @@ function show_results(results) {
 function game_loop(player_name) {
     show_menu(player_name).then(play_game).then(function(results) {
         results.player_name = player_name;
-        // console.info(results);
 
         show_results(results).then(function() {
             game_loop(player_name);
