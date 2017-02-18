@@ -93,3 +93,19 @@ body {
 .correct {
     color: lime;
 }
+
+.score-section {
+    float: left;
+    width: 24%;
+    font-size: small;
+    border: solid 1px;
+    margin: 0.25em;
+}
+
+li.score-item {
+  list-style-type: none;
+}
+
+.player-name {
+    float: left;
+}

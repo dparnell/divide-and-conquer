@@ -168,7 +168,7 @@ function ajax(method, url, obj) {
     xmlhttp.onreadystatechange = function() {
         if(this.readyState == 4) {
             if(this.status >= 200 && this.status <= 299) {
-                result.resolve(this.responseText);
+                result.resolve(JSON.parse(this.responseText));
             } else {
                 result.reject(this.responseText);
             }
@@ -389,6 +389,71 @@ function show_results(results) {
     var btn = t(e("button"), "Okay");
     btn.setAttribute("disabled", "disabled");
 
+    var scores = null;
+
+    a(dlg, btn);
+    btn.onclick = function() {
+        kill(dlg).then(function() {
+            next.resolve(scores);
+        });
+    };
+
+    a(document.body, dlg);
+
+
+    ajax("POST", "/db.php", results).then(function(the_scores) {
+        scores = the_scores;
+        btn.removeAttribute("disabled");
+    });
+
+    return next;
+}
+
+function show_high_scores(scores) {
+    var next = new P();
+
+    var dlg = e("div", {class: "results dialog visible"});
+    a(dlg, t(e("h1"), "Best Scores"));
+
+    var best = {};
+    var i, j, L = scores.length;
+    var s, aa, ss;
+
+    for(i=0; i<L; i++) {
+        s = scores[i];
+        ss = s[0].toString();
+
+        aa = best[ss];
+        if(!aa) {
+            aa = best[ss] = [];
+        }
+
+        aa.push(s);
+    }
+
+    var div, ul, li, n;
+
+    for(i=1; i<=12; i++) {
+        ss = i.toString();
+        div = e("div", {class: "score-section"});
+        a(dlg, div);
+        a(div, t(e("h2"), "Divide by " + i));
+        ul = e("ul", {class: "scores"});
+        for(j=0; j<5; j++) {
+            aa = best[ss];
+            li = a(ul, e("li", {class: "score-item"}));
+            if(aa && aa[j]) {
+                a(li, t(e("span", {class: "player-name"}), aa[j][1]));
+                a(li, t(e("span", {class: "score"}), aa[j][2].toFixed(2)));
+            } else {
+                a(li, t(e("span", {class: "nothing"}), "-"));
+            }
+        }
+        a(div, ul);
+    }
+
+    var btn = t(e("button"), "Okay");
+
     a(dlg, btn);
     btn.onclick = function() {
         kill(dlg).then(function() {
@@ -398,11 +463,6 @@ function show_results(results) {
 
     a(document.body, dlg);
 
-
-    ajax("POST", "/db.php", results).then(function() {
-        btn.removeAttribute("disabled");
-    });
-
     return next;
 }
 
@@ -410,7 +470,7 @@ function game_loop(player_name) {
     show_menu(player_name).then(play_game).then(function(results) {
         results.player_name = player_name;
 
-        show_results(results).then(function() {
+        show_results(results).then(show_high_scores).then(function() {
             game_loop(player_name);
         });
     });

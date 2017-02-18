@@ -23,13 +23,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $s->bindValue("now", time(), SQLITE3_INTEGER);
         $s->execute();
         $s->close();
-
-        echo("OK");
-    } else {
-        echo("NOPE");
     }
-} else {
 }
+
+$sql = "select * from (select divide_by, name, time_taken from results where divide_by=1 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=2 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=3 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=4 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=5 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=6 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=7 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=8 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=9 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=10 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=11 and number_correct=12 order by time_taken asc limit 5) a
+union all
+select * from (select divide_by, name, time_taken from results where divide_by=12 and number_correct=12 order by time_taken asc limit 5) a
+order by divide_by asc, time_taken asc";
+
+$result = [];
+$rs = $db->query($sql);
+while ($row = $rs->fetchArray(SQLITE3_NUM)) {
+    array_push($result, $row);
+}
+
+header("Content-Type: text/json");
+echo(json_encode($result));
 
 $db->close();
 
