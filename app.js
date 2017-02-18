@@ -375,10 +375,8 @@ function show_results(results) {
         total_time += result.time_taken;
     }
 
-    result.correct_count = correct_count;
-    result.total_time = total_time;
-
-    // TODO: add code to store the updated results here
+    results.correct_count = correct_count;
+    results.total_time = total_time;
 
     a(dlg, t(e("div"), "You took " + format(total_time) + " seconds"));
 
@@ -389,6 +387,8 @@ function show_results(results) {
     }
 
     var btn = t(e("button"), "Okay");
+    btn.setAttribute("disabled", "disabled");
+
     a(dlg, btn);
     btn.onclick = function() {
         kill(dlg).then(function() {
@@ -397,6 +397,11 @@ function show_results(results) {
     };
 
     a(document.body, dlg);
+
+
+    ajax("POST", "/db.php", results).then(function() {
+        btn.removeAttribute("disabled");
+    });
 
     return next;
 }
