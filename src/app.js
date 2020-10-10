@@ -206,7 +206,7 @@ function kill(e) {
     return result;
 }
 
-function ask(m) {
+function ask(m, validate) {
     var result = new P();
     var dlg = e("div", {class: "ask dialog visible"});
     a(dlg, t(e("h1"), m));
@@ -216,7 +216,12 @@ function ask(m) {
     a(dlg, btn);
 
     function done() {
-        if(txt.value) {
+        let v = txt.value;
+        if(validate && !validate(v)) {
+            return;
+        }
+
+        if(v) {
             kill(dlg).then(function() {
                 result.resolve(txt.value);
             });
@@ -484,8 +489,12 @@ function game_loop(player_name) {
     });
 }
 
+function validate_name(name) {
+    return name.split(" ", 2).length == 2;
+}
+
 function start_game() {
-    ask("What is your name?").then(game_loop);
+    ask("What is your name?", validate_name).then(game_loop);
 }
 
 start_game();
