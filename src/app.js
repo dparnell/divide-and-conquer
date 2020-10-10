@@ -3,7 +3,7 @@
  */
 
 /*
-  Base on CSS Animation code by Osvaldas Valutis, www.osvaldas.info
+  Based on CSS Animation code by Osvaldas Valutis, www.osvaldas.info
   Available for use under the MIT License
 */
 
@@ -27,7 +27,7 @@
            that.addEventListener( "oAnimationEnd", runOnce );
            that.addEventListener( "oanimationend", runOnce );
            that.addEventListener( "animationend", runOnce );
-           if( ( prefixAnimation === "" && !( "animation" in s ) ) || getComputedStyle( that )[ prefixAnimation + "animation-duration" ] == "0s" ) callback();
+           if( ( prefixAnimation === "" && !( "animation" in s ) ) || window.getComputedStyle( that )[ prefixAnimation + "animation-duration" ] == "0s" ) callback();
            return that;
        };
    }( document, window, 0 ));
@@ -51,6 +51,12 @@ function r(e) {
 // set element text
 function t(e, c) {
     e.innerText = c;
+    return e;
+}
+
+// set element html
+function h(e, c) {
+    e.innerHTML = c;
     return e;
 }
 
@@ -90,8 +96,8 @@ function removeClass(e, c) {
 function P() {
     this.resolved_value = undefined;
     this.resolved = false;
-    this.failed_value = undefined;
-    this.failed = false;
+    this.rejected_value = undefined;
+    this.rejected = false;
     this.ok = [];
     this.nope = [];
 }
@@ -108,7 +114,7 @@ P.prototype.then = function(f) {
 
 P.prototype.fail = function(f) {
     if(this.rejected) {
-        f(rejected_value);
+        f(this.rejected_value);
     } else {
         this.not.push(f);
     }
@@ -192,7 +198,7 @@ function ajax(method, url, obj) {
 function kill(e) {
     var result = new P();
     addClass(e, "fade");
-    onCSSAnimationEnd(e, function() {
+    window.onCSSAnimationEnd(e, function() {
         r(e);
         result.resolve();
     });
@@ -279,9 +285,11 @@ function play_game(table) {
             var end_time = the_time();
 
             results.push({
-                question: (question * table) + " / " + table,
-                answer: Number(txt.value),
+                given_answer: Number(txt.value),
                 correct_answer: question,
+                value_1: question * table,
+                value_2: table,
+                operation: "&divide;",
                 time_taken: end_time - start_time
             });
             next_question();
@@ -316,7 +324,7 @@ function play_game(table) {
             question = questions.pop();
             start_time = the_time();
 
-            t(h1, "What is " + (question * table) + " divided by " + table + "?");
+            h(h1, "What is " + (question * table) + " &divide; " + table + "?");
             txt.value = "";
             txt.focus();
         }
@@ -366,12 +374,12 @@ function show_results(results) {
     correct_count = 12;
     for(var i=0; i<12; i++) {
         result = results.results[i];
-        is_correct = result.answer == result.correct_answer;
+        is_correct = result.given_answer == result.correct_answer;
         if(!is_correct) {
             correct_count--;
         }
         answer = e("div", {class: is_correct ? "correct" : "wrong"});
-        a(dlg, t(answer, result.question + " = " + result.answer + " in " + format(result.time_taken) + "s"));
+        a(dlg, h(answer, result.value_1 + " " + result.operation + " " + result.value_2 + " = " + result.given_answer + " in " + format(result.time_taken) + "s"));
         total_time += result.time_taken;
     }
 
