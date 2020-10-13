@@ -1,1 +1,1 @@
-Redirect 302 / /app/
+RewriteRule ^(/)?$ app/ [L]
