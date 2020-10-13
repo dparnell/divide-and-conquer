@@ -414,7 +414,7 @@ function show_results(results) {
     a(document.body, dlg);
 
 
-    ajax("POST", "/db.php", results).then(function(the_scores) {
+    ajax("POST", "db.php", results).then(function(the_scores) {
         scores = the_scores;
         btn.removeAttribute("disabled");
     });
