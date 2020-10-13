@@ -8,4 +8,4 @@ fi
 
 BASE=`pwd`
 
-docker run --rm --user "$(id -u):$(id -g)" -v $BASE/config/httpd.conf:/etc/apache2/httpd.conf -v $BASE/src:/var/www/localhost/htdocs -p 5080:5080 $IMAGE_NAME
+docker run --rm --user "$(id -u):$(id -g)" -v $BASE/config/httpd.conf:/etc/apache2/httpd.conf -v $BASE/app:/var/www/localhost/htdocs -p 5080:5080 $IMAGE_NAME
