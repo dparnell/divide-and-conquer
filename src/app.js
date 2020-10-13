@@ -263,7 +263,7 @@ function play_game(table) {
     var i, questions;
 
     questions = [];
-    for(i = 1; i < 13; i++) {
+    for(i = 0; i <= 12; i++) {
         questions.push(i);
     }
     shuffle(questions);
@@ -376,8 +376,8 @@ function show_results(results) {
     a(dlg, h1);
 
     total_time = 0;
-    correct_count = 12;
-    for(var i=0; i<12; i++) {
+    correct_count = 13;
+    for(var i=0; i<=12; i++) {
         result = results.results[i];
         is_correct = result.given_answer == result.correct_answer;
         if(!is_correct) {
@@ -393,7 +393,7 @@ function show_results(results) {
 
     a(dlg, t(e("div"), "You took " + format(total_time) + " seconds"));
 
-    if(correct_count == 12) {
+    if(correct_count == 13) {
         t(h1, "Congratulations. You got them all correct!");
     } else {
         t(h1, "You got " + correct_count + " out of 12 correct");

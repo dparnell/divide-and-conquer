@@ -45,30 +45,40 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-$sql = "select * from (select divide_by, name, time_taken from results where divide_by=1 and number_correct=12 order by time_taken asc limit 5) a
+if(array_key_exists("q", $_REQUEST)) {
+    $op = $_REQUEST["q"];
+    if($op == "names") {
+        $sql = "select distinct name from results order by name";
+    } else {
+        trigger_error("Invalid operation", E_USER_ERROR);
+    }
+
+} else {
+    $sql = "select * from (select divide_by, name, time_taken from results where divide_by=1 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=2 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=2 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=3 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=3 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=4 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=4 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=5 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=5 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=6 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=6 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=7 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=7 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=8 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=8 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=9 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=9 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=10 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=10 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=11 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=11 and number_correct=13 order by time_taken asc limit 5) a
 union all
-select * from (select divide_by, name, time_taken from results where divide_by=12 and number_correct=12 order by time_taken asc limit 5) a
+select * from (select divide_by, name, time_taken from results where divide_by=12 and number_correct=13 order by time_taken asc limit 5) a
 order by divide_by asc, time_taken asc";
+}
 
 $result = [];
 $rs = $db->query($sql);
