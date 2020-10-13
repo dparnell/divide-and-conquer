@@ -396,7 +396,7 @@ function show_results(results) {
     if(correct_count == 13) {
         t(h1, "Congratulations. You got them all correct!");
     } else {
-        t(h1, "You got " + correct_count + " out of 12 correct");
+        t(h1, "You got " + correct_count + " out of 13 correct");
     }
 
     var btn = t(e("button"), "Okay");
