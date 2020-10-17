@@ -109,3 +109,22 @@ li.score-item {
 .player-name {
     float: left;
 }
+
+.margin-right-1 {
+    margin-right: 1em;
+}
+
+.pink {
+    background-color: #e33;
+    color: white;
+}
+
+.yellow {
+    background-color: #cc0;
+    color: black;
+}
+
+.green {
+    background-color: #090;
+    color: white;
+}

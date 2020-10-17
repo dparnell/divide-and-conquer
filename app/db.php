@@ -45,10 +45,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
+$args = null;
+$result_type = SQLITE3_NUM;
 if(array_key_exists("q", $_REQUEST)) {
     $op = $_REQUEST["q"];
     if($op == "names") {
         $sql = "select distinct name from results order by name";
+    } else if($op == "tables") {
+        $sql = "select distinct divide_by from results order by divide_by";
+    } else if($op == "all_student_table_summary") {
+        $sql = "select id, name, number_correct, time_taken, inserted_at from results where divide_by=:divide_by order by trim(upper(name)), inserted_at";
+        $result_type = SQLITE3_ASSOC;
+        $args = array("divide_by" => $_REQUEST["table"]);
     } else {
         trigger_error("Invalid operation", E_USER_ERROR);
     }
@@ -81,8 +89,17 @@ order by divide_by asc, time_taken asc";
 }
 
 $result = [];
-$rs = $db->query($sql);
-while ($row = $rs->fetchArray(SQLITE3_NUM)) {
+if($args == null) {
+    $rs = $db->query($sql);
+} else {
+    $s = $db->prepare($sql);
+    foreach($args as $k => $v) {
+        $s->bindValue($k, $v, SQLITE3_TEXT);
+    }
+    $rs = $s->execute();
+}
+
+while ($row = $rs->fetchArray($result_type)) {
     array_push($result, $row);
 }
 
