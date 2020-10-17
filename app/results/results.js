@@ -227,6 +227,40 @@ function fetch_tables() {
     return fetch_data("tables");
 }
 
+function render_results(root, result, rows) {
+    clear(root);
+    var date = new Date(result.inserted_at * 1000);
+    a(root, t(e("h3"), "Details for " + result.name + " division by " + result.divide_by + " entered at " + date.toLocaleString()));
+
+    var table = e("table");
+    var tr = e("tr");
+    a(tr, t(e("th", {align: "left"}), "Question"));
+    a(tr, t(e("th", {align: "right"}), "Answer Given"));
+    a(tr, t(e("th", {align: "right"}), "Corrent Answer"));
+    a(tr, t(e("th", {align: "right"}), "Time Taken"));
+
+    a(table, tr);
+    for(var i=0; i<rows.length; i++) {
+        var row = rows[i];
+        tr = e("tr");
+
+        var answer = rows[i];
+        a(tr, h(e("td", {align: "left"}), "What is " + row.value_1 + " " + row.operation + " " + row.value_2 + " ?"));
+        a(tr, t(e("td", {align: "right"}), row.given_answer));
+        a(tr, t(e("td", {align: "right"}), row.correct_answer));
+        a(tr, t(e("td", {align: "right"}), row.time_taken.toFixed(2)));
+
+        if(row.given_answer == row.correct_answer) {
+            addClass(tr, "correct");
+        } else {
+            addClass(tr, "wrong");
+        }
+
+        a(table, tr);
+    }
+
+    a(root, table);
+}
 
 function build_all_student_table_summary(root, table, rows) {
     clear(root);
@@ -235,6 +269,15 @@ function build_all_student_table_summary(root, table, rows) {
     var table_element = e("table");
     var current_student = null;
     var current_tr = null;
+    var detail = e("div");
+
+    function make_handle_click(row) {
+        return function() {
+            fetch_data("results", {id: row.id}).then(function(results) {
+                render_results(detail, row, results);
+            });
+        };
+    }
 
     for(var i=0; i<rows.length; i++) {
         var row = rows[i];
@@ -254,10 +297,12 @@ function build_all_student_table_summary(root, table, rows) {
         } else {
             addClass(td, "green");
         }
+        td.onclick = make_handle_click(row);
         a(current_tr, td);
     }
 
     a(root, table_element);
+    a(root, detail);
 }
 
 function summary_report(root, student, table) {

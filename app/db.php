@@ -54,9 +54,13 @@ if(array_key_exists("q", $_REQUEST)) {
     } else if($op == "tables") {
         $sql = "select distinct divide_by from results order by divide_by";
     } else if($op == "all_student_table_summary") {
-        $sql = "select id, name, number_correct, time_taken, inserted_at from results where divide_by=:divide_by order by trim(upper(name)), inserted_at";
         $result_type = SQLITE3_ASSOC;
+        $sql = "select id, name, divide_by, number_correct, time_taken, inserted_at from results where divide_by=:divide_by order by trim(upper(name)), inserted_at";
         $args = array("divide_by" => $_REQUEST["table"]);
+    } else if($op == "results") {
+        $result_type = SQLITE3_ASSOC;
+        $sql = "select * from answers where result_id=:id order by id";
+        $args = array("id" => $_REQUEST["id"]);
     } else {
         trigger_error("Invalid operation", E_USER_ERROR);
     }
