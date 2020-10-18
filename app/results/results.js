@@ -227,6 +227,20 @@ function fetch_tables() {
     return fetch_data("tables");
 }
 
+function order_rows_by_last_name(rows) {
+    return rows.sort(function(a, b) {
+        var ap = a.name.trim().toUpperCase().split(" ");
+        var bp = b.name.trim().toUpperCase().split(" ");
+
+        var result = ap[1].localeCompare(bp[1]);
+        if(result === 0) {
+            result = ap[0].localeCompare(bp[0]);
+        }
+
+        return result;
+    });
+}
+
 function render_results(root, result, rows) {
     clear(root);
     var date = new Date(result.inserted_at * 1000);
@@ -265,6 +279,8 @@ function render_results(root, result, rows) {
 function build_all_student_table_summary(root, table, rows) {
     clear(root);
     a(root, t(e("h3"), "Whole class summary for division by " + table));
+
+    order_rows_by_last_name(rows);
 
     var table_element = e("table");
     var current_student = null;
