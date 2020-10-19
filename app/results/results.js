@@ -215,7 +215,8 @@ function ajax(method, url, obj) {
 }
 
 function fetch_data(query, options) {
-    var params = Object.assign({q: query}, options || {});
+    var now = new Date();
+    var params = Object.assign({q: query, _: now.getTime()}, options || {});
     return ajax("GET", "../db.php", params);
 }
 
