@@ -258,14 +258,42 @@ function shuffle(array) {
  *  The actual game starts here
  */
 
-function play_game(table) {
-    var result = new P();
+window.timeLimit = 0;
+window.disableHighScoreTable = false;
+
+
+window.buildQuestionUIBuilder = function(dlg) {
+    var h1 = e("h1");
+    a(dlg, h1);
+
+    return function(q) {
+        h(h1, "What is " + q.value_1 + " " + q.operation + " " + q.value_2 + " ?");
+    };
+};
+
+
+window.buildQuestions = function(table) {
     var i, questions;
 
     questions = [];
     for(i = 0; i <= 12; i++) {
-        questions.push(i);
+        questions.push({
+            correct_answer: i,
+            value_1: i * table,
+            value_2: table,
+            operation: "&divide;"
+        });
     }
+
+    return questions;
+};
+
+function play_game(table) {
+    var result = new P();
+    var i, questions;
+
+
+    questions = window.buildQuestions(table);
     shuffle(questions);
 
     function the_time() {
@@ -273,6 +301,7 @@ function play_game(table) {
     }
 
     var dlg = e("div", {class: "ask dialog visible"});
+    var buildQuestionUI = window.buildQuestionUIBuilder(dlg);
     var h1 = e("h1");
     a(dlg, h1);
     var txt = e("input", {type: "text"});
@@ -289,19 +318,24 @@ function play_game(table) {
         if(txt.value) {
             var end_time = the_time();
 
-            results.push({
+            results.push(Object.assign({
                 given_answer: Number(txt.value),
-                correct_answer: question,
-                value_1: question * table,
-                value_2: table,
-                operation: "&divide;",
                 time_taken: end_time - start_time
-            });
+            }, question));
+
             next_question();
         }
     }
 
     btn.onclick = done;
+    var timer;
+    if(window.timeLimit) {
+        timer = window.setTimeout(function() {
+            result.resolve({message: "Times Up!", results: results});
+        }, window.timeLimit * 1000);
+    } else {
+        timer = null;
+    }
 
     a(document.body, dlg);
     txt.focus();
@@ -322,6 +356,10 @@ function play_game(table) {
 
     function next_question() {
         if(questions.length === 0) {
+            if(timer) {
+                window.clearTimeout(timer);
+            }
+
             kill(dlg).then(function() {
                 result.resolve({table: table, results: results});
             });
@@ -329,7 +367,8 @@ function play_game(table) {
             question = questions.pop();
             start_time = the_time();
 
-            h(h1, "What is " + (question * table) + " &divide; " + table + "?");
+            buildQuestionUI(question);
+
             txt.value = "";
             txt.focus();
         }
@@ -340,10 +379,8 @@ function play_game(table) {
     return result;
 }
 
-function show_menu(player_name) {
-    var result = new P();
-    var dlg = e("div", {class: "menu dialog visible"});
-    a(dlg, t(e("h1"), "Hi " + player_name+"! Choose your divisor"));
+window.showMenu = function(dlg, result) {
+    a(dlg, t(e("p"), "Choose your divisor"));
 
     function make_menu_item(index) {
         var btn = t(e("button"), index);
@@ -360,6 +397,15 @@ function show_menu(player_name) {
     }
 
     a(document.body, dlg);
+};
+
+function show_menu(player_name) {
+    var result = new P();
+    var dlg = e("div", {class: "menu dialog visible"});
+    a(dlg, t(e("h1"), "Hi " + player_name));
+
+    window.showMenu(dlg, result);
+
     return result;
 }
 
@@ -376,12 +422,13 @@ function show_results(results) {
     a(dlg, h1);
 
     total_time = 0;
-    correct_count = 13;
-    for(var i=0; i<=12; i++) {
+    var count = results.results.length;
+    correct_count = 0;
+    for(var i=0; i<count; i++) {
         result = results.results[i];
-        is_correct = result.given_answer == result.correct_answer;
-        if(!is_correct) {
-            correct_count--;
+        is_correct = result.given_answer === result.correct_answer;
+        if(is_correct) {
+            correct_count++;
         }
         answer = e("div", {class: is_correct ? "correct" : "wrong"});
         a(dlg, h(answer, result.value_1 + " " + result.operation + " " + result.value_2 + " = " + result.given_answer + " in " + format(result.time_taken) + "s"));
@@ -393,10 +440,10 @@ function show_results(results) {
 
     a(dlg, t(e("div"), "You took " + format(total_time) + " seconds"));
 
-    if(correct_count == 13) {
+    if(correct_count == count) {
         t(h1, "Congratulations. You got them all correct!");
     } else {
-        t(h1, "You got " + correct_count + " out of 13 correct");
+        t(h1, "You got " + correct_count + " out of " + count + " correct");
     }
 
     var btn = t(e("button"), "Okay");
@@ -425,57 +472,63 @@ function show_results(results) {
 function show_high_scores(scores) {
     var next = new P();
 
-    var dlg = e("div", {class: "results dialog visible"});
-    a(dlg, t(e("h1"), "Best Scores"));
-
-    var best = {};
-    var i, j, L = scores.length;
-    var s, aa, ss;
-
-    for(i=0; i<L; i++) {
-        s = scores[i];
-        ss = s[0].toString();
-
-        aa = best[ss];
-        if(!aa) {
-            aa = best[ss] = [];
-        }
-
-        aa.push(s);
-    }
-
-    var div, ul, li, n;
-
-    for(i=1; i<=12; i++) {
-        ss = i.toString();
-        div = e("div", {class: "score-section"});
-        a(dlg, div);
-        a(div, t(e("h2"), "Divide by " + i));
-        ul = e("ul", {class: "scores"});
-        for(j=0; j<5; j++) {
-            aa = best[ss];
-            li = a(ul, e("li", {class: "score-item"}));
-            if(aa && aa[j]) {
-                a(li, t(e("span", {class: "player-name"}), aa[j][1]));
-                a(li, t(e("span", {class: "score"}), aa[j][2].toFixed(2)));
-            } else {
-                a(li, t(e("span", {class: "nothing"}), "-"));
-            }
-        }
-        a(div, ul);
-    }
-
-    var btn = t(e("button"), "Okay");
-
-    a(dlg, btn);
-    btn.onclick = function() {
-        kill(dlg).then(function() {
+    if(window.disableHighScoreTable) {
+        window.setTimeout(function() {
             next.resolve();
-        });
-    };
+        }, 10);
+    } else {
+        var dlg = e("div", {class: "results dialog visible"});
+        a(dlg, t(e("h1"), "Best Scores"));
 
-    a(document.body, dlg);
+        var best = {};
+        var i, j, L = scores.length;
+        var s, aa, ss;
 
+        for(i=0; i<L; i++) {
+            s = scores[i];
+            ss = s[0].toString();
+
+            aa = best[ss];
+            if(!aa) {
+                aa = best[ss] = [];
+            }
+
+            aa.push(s);
+        }
+
+        var div, ul, li, n;
+
+        for(i=1; i<=12; i++) {
+            ss = i.toString();
+            div = e("div", {class: "score-section"});
+            a(dlg, div);
+            a(div, t(e("h2"), "Divide by " + i));
+            ul = e("ul", {class: "scores"});
+            for(j=0; j<5; j++) {
+                aa = best[ss];
+                li = a(ul, e("li", {class: "score-item"}));
+                if(aa && aa[j]) {
+                    a(li, t(e("span", {class: "player-name"}), aa[j][1]));
+                    a(li, t(e("span", {class: "score"}), aa[j][2].toFixed(2)));
+                } else {
+                    a(li, t(e("span", {class: "nothing"}), "-"));
+                }
+            }
+            a(div, ul);
+        }
+
+        var btn = t(e("button"), "Okay");
+
+        a(dlg, btn);
+        btn.onclick = function() {
+            kill(dlg).then(function() {
+                next.resolve();
+            });
+        };
+
+        a(document.body, dlg);
+
+    }
     return next;
 }
 
