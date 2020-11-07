@@ -49,7 +49,14 @@ $args = null;
 $result_type = SQLITE3_NUM;
 if(array_key_exists("q", $_REQUEST)) {
     $op = $_REQUEST["q"];
-    if($op == "names") {
+    if($op == "db") {
+        $fp = fopen($db_file, 'rb');
+        header("Content-Type: application/x-sqlite3");
+        header("Content-Length: " . filesize($db_file));
+        header('Content-disposition: attachment; filename="data.sqlite3"');
+        fpassthru($fp);
+        exit;
+    } else if($op == "names") {
         $sql = "select distinct name from results order by name";
     } else if($op == "tables") {
         $sql = "select distinct divide_by from results order by divide_by";
