@@ -469,6 +469,45 @@ function show_results(results) {
     return next;
 }
 
+window.renderHighScoreTable = function(dlg, scores) {
+    var best = {};
+    var i, j, L = scores.length;
+    var s, aa, ss;
+
+    for(i=0; i<L; i++) {
+        s = scores[i];
+        ss = s[0].toString();
+
+        aa = best[ss];
+        if(!aa) {
+            aa = best[ss] = [];
+        }
+
+        aa.push(s);
+    }
+
+    var div, ul, li, n;
+
+    for(i=1; i<=12; i++) {
+        ss = i.toString();
+        div = e("div", {class: "score-section"});
+        a(dlg, div);
+        a(div, t(e("h2"), "Divide by " + i));
+        ul = e("ul", {class: "scores"});
+        for(j=0; j<5; j++) {
+            aa = best[ss];
+            li = a(ul, e("li", {class: "score-item"}));
+            if(aa && aa[j]) {
+                a(li, t(e("span", {class: "player-name"}), aa[j][1]));
+                a(li, t(e("span", {class: "score"}), aa[j][2].toFixed(2)));
+            } else {
+                a(li, t(e("span", {class: "nothing"}), "-"));
+            }
+        }
+        a(div, ul);
+    }
+};
+
 function show_high_scores(scores) {
     var next = new P();
 
@@ -480,42 +519,7 @@ function show_high_scores(scores) {
         var dlg = e("div", {class: "results dialog visible"});
         a(dlg, t(e("h1"), "Best Scores"));
 
-        var best = {};
-        var i, j, L = scores.length;
-        var s, aa, ss;
-
-        for(i=0; i<L; i++) {
-            s = scores[i];
-            ss = s[0].toString();
-
-            aa = best[ss];
-            if(!aa) {
-                aa = best[ss] = [];
-            }
-
-            aa.push(s);
-        }
-
-        var div, ul, li, n;
-
-        for(i=1; i<=12; i++) {
-            ss = i.toString();
-            div = e("div", {class: "score-section"});
-            a(dlg, div);
-            a(div, t(e("h2"), "Divide by " + i));
-            ul = e("ul", {class: "scores"});
-            for(j=0; j<5; j++) {
-                aa = best[ss];
-                li = a(ul, e("li", {class: "score-item"}));
-                if(aa && aa[j]) {
-                    a(li, t(e("span", {class: "player-name"}), aa[j][1]));
-                    a(li, t(e("span", {class: "score"}), aa[j][2].toFixed(2)));
-                } else {
-                    a(li, t(e("span", {class: "nothing"}), "-"));
-                }
-            }
-            a(div, ul);
-        }
+        window.renderHighScoreTable(dlg, scores);
 
         var btn = t(e("button"), "Okay");
 
