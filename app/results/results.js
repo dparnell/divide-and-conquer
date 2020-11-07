@@ -245,7 +245,8 @@ function order_rows_by_last_name(rows) {
 function render_results(root, result, rows) {
     clear(root);
     var date = new Date(result.inserted_at * 1000);
-    a(root, t(e("h3"), "Details for " + result.name + " division by " + result.divide_by + " entered at " + date.toLocaleString()));
+
+    a(root, t(e("h3"), "Details for " + result.name + " table " + result.divide_by + " entered at " + date.toLocaleString()));
 
     var table = e("table");
     var tr = e("tr");
@@ -279,7 +280,7 @@ function render_results(root, result, rows) {
 
 function build_all_student_table_summary(root, table, rows) {
     clear(root);
-    a(root, t(e("h3"), "Whole class summary for division by " + table));
+    a(root, t(e("h3"), "Whole class summary for table: " + table));
 
     order_rows_by_last_name(rows);
 
