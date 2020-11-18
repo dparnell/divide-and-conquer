@@ -278,6 +278,20 @@ function render_results(root, result, rows) {
     a(root, table);
 }
 
+function scoreClass(correct) {
+    if(correct === null || correct == "-") {
+        return "pink";
+    }
+
+    if(correct <= 6) {
+        return "pink";
+    } else if(correct <= 9) {
+        return "yellow";
+    }
+
+    return "green";
+}
+
 function build_all_student_table_summary(root, table, rows) {
     clear(root);
     a(root, t(e("h3"), "Whole class summary for table: " + table));
@@ -308,13 +322,7 @@ function build_all_student_table_summary(root, table, rows) {
         }
 
         var td = t(e("td", {align: "right", title: "Time taken: " + row.time_taken.toFixed(2)}), row.number_correct);
-        if(row.number_correct <= 6) {
-            addClass(td, "pink");
-        } else if(row.number_correct <= 9) {
-            addClass(td, "yellow");
-        } else {
-            addClass(td, "green");
-        }
+        addClass(td, scoreClass(row.number_correct));
         td.onclick = make_handle_click(row);
         a(current_tr, td);
     }
@@ -323,12 +331,60 @@ function build_all_student_table_summary(root, table, rows) {
     a(root, detail);
 }
 
+function build_all_tables_summary(root, rows) {
+    clear(root);
+    a(root, t(e("h3"), "Whole class summary for all tables"));
+
+    if(rows.length == 0) {
+        var div = t(e("div"), "No data found");
+        a(root, div);
+    } else {
+        order_rows_by_last_name(rows);
+
+        var table = e("table");
+        var tr = e("tr");
+        var i, j;
+        var th = h(e("th"), "&nbsp;");
+        a(tr, th);
+        for(i=1; i<=12; i++) {
+            th = t(e("th"), i);
+            a(tr, th);
+        }
+        a(table, tr);
+
+        for(i=0; i<rows.length; i++) {
+            var row = rows[i];
+            tr = e("tr");
+            a(tr, t(e("th"), row.name));
+
+            for(j=1; j<=12; j++) {
+                var key = "d" + (j<10 ? "0" + j : j);
+                var score = row[key];
+
+                if(score === null) {
+                    score = "-";
+                }
+
+                var td = addClass(t(e("td", {align: score == "-" ? "center" : "right"}), score), scoreClass(score));
+                a(tr, td);
+            }
+
+            a(table, tr);
+        }
+
+        a(root, table);
+    }
+}
+
 function summary_report(root, student, table) {
     clear(root);
     t(root, "Loading...");
 
     if(student == "-" && table == "-") {
         // summary for all students across all tables
+        fetch_data("all_tables_summary").then(function(rows) {
+            build_all_tables_summary(root, rows);
+        });
     } else if(student == "-" && table != "-") {
         // summary for all students for a given table
         fetch_data("all_student_table_summary", {table: table}).then(function(rows) {
@@ -337,7 +393,7 @@ function summary_report(root, student, table) {
     } else if(student != "-" && table == "-") {
         // summary for a given student across all tables
     } else {
-        // summary for a giden student for a given table
+        // summary for a given student for a given table
     }
 }
 
