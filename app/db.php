@@ -68,19 +68,19 @@ if(array_key_exists("q", $_REQUEST)) {
         $result_type = SQLITE3_ASSOC;
         $sql = "select n.name, d1.correct as d01, d2.correct as d02, d3.correct as d03, d4.correct as d04, d5.correct as d05, d6.correct as d06,
 d7.correct as d07, d8.correct as d08, d9.correct as d09, d10.correct as d10, d11.correct as d11, d12.correct as d12 from
-(select distinct name from results) as n
-left join (select name, max(number_correct) correct from results where divide_by=1 group by name) as d1 on n.name=d1.name
-left join (select name, max(number_correct) correct from results where divide_by=2 group by name) as d2 on n.name=d2.name
-left join (select name, max(number_correct) correct from results where divide_by=3 group by name) as d3 on n.name=d3.name
-left join (select name, max(number_correct) correct from results where divide_by=4 group by name) as d4 on n.name=d4.name
-left join (select name, max(number_correct) correct from results where divide_by=5 group by name) as d5 on n.name=d5.name
-left join (select name, max(number_correct) correct from results where divide_by=6 group by name) as d6 on n.name=d6.name
-left join (select name, max(number_correct) correct from results where divide_by=7 group by name) as d7 on n.name=d7.name
-left join (select name, max(number_correct) correct from results where divide_by=8 group by name) as d8 on n.name=d8.name
-left join (select name, max(number_correct) correct from results where divide_by=9 group by name) as d9 on n.name=d9.name
-left join (select name, max(number_correct) correct from results where divide_by=10 group by name) as d10 on n.name=d10.name
-left join (select name, max(number_correct) correct from results where divide_by=11 group by name) as d11 on n.name=d11.name
-left join (select name, max(number_correct) correct from results where divide_by=12 group by name) as d12 on n.name=d12.name";
+(select distinct lower(trim(name)) name from results) as n
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=1 group by lower(trim(name))) as d1 on n.name=d1.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=2 group by lower(trim(name))) as d2 on n.name=d2.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=3 group by lower(trim(name))) as d3 on n.name=d3.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=4 group by lower(trim(name))) as d4 on n.name=d4.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=5 group by lower(trim(name))) as d5 on n.name=d5.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=6 group by lower(trim(name))) as d6 on n.name=d6.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=7 group by lower(trim(name))) as d7 on n.name=d7.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=8 group by lower(trim(name))) as d8 on n.name=d8.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=9 group by lower(trim(name))) as d9 on n.name=d9.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=10 group by lower(trim(name))) as d10 on n.name=d10.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=11 group by lower(trim(name))) as d11 on n.name=d11.name
+left join (select lower(trim(name)) name, max(number_correct) correct from results where divide_by=12 group by lower(trim(name))) as d12 on n.name=d12.name";
     } else if($op == "results") {
         $result_type = SQLITE3_ASSOC;
         $sql = "select * from answers where result_id=:id order by id";
