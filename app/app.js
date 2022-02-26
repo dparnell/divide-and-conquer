@@ -180,6 +180,24 @@ function ajax(method, url, obj) {
             }
         }
     };
+
+    if(obj && method == "GET") {
+        var str = [];
+        for(var p in obj) {
+            if(obj.hasOwnProperty(p)) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+            }
+        }
+
+        if(url.indexOf("?") == -1) {
+            url += "?";
+        } else {
+            url += "&";
+        }
+
+        url += str.join("&");
+    }
+
     xmlhttp.open(method, url, true);
     if(obj && method != "GET") {
         xmlhttp.setRequestHeader("Content-Type", "application/json");
@@ -536,22 +554,56 @@ function show_high_scores(scores) {
     return next;
 }
 
-function game_loop(player_name) {
+function game_loop(student_id, player_name) {
     show_menu(player_name).then(play_game).then(function(results) {
-        results.player_name = player_name;
+        results.student_id = student_id;
 
         show_results(results).then(show_high_scores).then(function() {
-            game_loop(player_name);
+            game_loop(student_id, player_name);
         });
     });
 }
 
-function validate_name(name) {
-    return name.split(" ", 2).length == 2;
-}
-
 function start_game() {
-    ask("What is your name?", validate_name).then(game_loop);
+    var dlg = e("div", {class: "ask dialog visible"});
+    a(dlg, t(e("h1"), "Who are you?"));
+    a(dlg, t(e("div"), "First Name"));
+    var first = e("input", {type: "text"});
+    a(dlg, first);
+    a(dlg, t(e("div"), "Last Name"));
+    var last = e("input", {type: "text"});
+    a(dlg, last);
+    a(dlg, t(e("div"), "Class"));
+    var cohort = e("input", {type: "text"});
+    a(dlg, cohort);
+
+    var btn = t(e("button"), "Okay");
+    a(dlg, btn);
+
+    function done() {
+        if(first.value && last.value && cohort.value) {
+            var now = new Date();
+            var params = Object.assign({q: "login", _: now.getTime()}, {first_name: first.value, last_name: last.value, cohort: cohort.value});
+            ajax("GET", "db.php", params).then(function(rows) {
+                if(rows.length === 1) {
+                    kill(dlg);
+                    game_loop(rows[0][0], first.value + " " + last.value)
+                } else {
+                    alert("Unknown student details. Please see your teacher for your details");
+                }
+            });
+        }
+    }
+
+    btn.onclick = done;
+
+    a(document.body, dlg);
+    first.focus();
+    first.onkeypress = last.onkeypress = cohort.onkeydown = function(e) {
+        if(e.keyCode == 13) {
+            done();
+        }
+    };
 }
 
 start_game();
