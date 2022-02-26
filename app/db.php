@@ -84,6 +84,10 @@ if(array_key_exists("q", $_REQUEST)) {
         $result_type = SQLITE3_ASSOC;
         $sql = "select r.id, first_name||' '||last_name name, times_table, number_correct, time_taken, inserted_at from results r join students s on s.id=student_id where cohort=:cohort and times_table=:times_table order by last_name, first_name, inserted_at";
         $args = array("times_table" => $_REQUEST["table"], "cohort" => $_REQUEST["cohort"]);
+    } else if($op == "student_table_summary") {
+        $result_type = SQLITE3_ASSOC;
+        $sql = "select id, times_table, number_correct, time_taken, inserted_at from results where student_id=:student_id  order by times_table, inserted_at";
+        $args = array("student_id" => $_REQUEST["student_id"]);
     } else if($op == "all_tables_summary") {
         $result_type = SQLITE3_ASSOC;
         $sql = "select n.id as student_id, n.first_name||' '||n.last_name name, d1.correct as d01, d2.correct as d02, d3.correct as d03, d4.correct as d04, d5.correct as d05, d6.correct as d06,

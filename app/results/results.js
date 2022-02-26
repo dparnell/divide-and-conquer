@@ -296,6 +296,51 @@ function scoreClass(correct) {
     return "green";
 }
 
+function build_student_table_summary(root, student, rows) {
+    clear(root);
+    a(root, t(e("h3"), "Table summary for " + student));
+
+    var table_element = e("table");
+    var current_table = null;
+    var current_tr = null;
+    var detail = e("div");
+
+    function make_handle_click(row) {
+        return function() {
+            clear(detail);
+            t(detail, "Loading...");
+
+            fetch_data("results", {id: row.id}).then(function(results) {
+                row.name = student;
+                render_results(detail, row, results);
+            });
+        };
+    }
+
+    var header = e("tr");
+    a(header, t(e("th"), "Table"));
+    a(table_element, header);
+
+    for(var i=0; i<rows.length; i++) {
+        var row = rows[i];
+        if(current_table != row.times_table) {
+            current_table = row.times_table;
+
+            current_tr = e("tr");
+            a(current_tr, t(e("th", {align: "left"}), row.times_table));
+            a(table_element, current_tr);
+        }
+
+        var td = t(e("td", {align: "right", title: "Time taken: " + row.time_taken.toFixed(2)}), row.number_correct);
+        addClass(td, scoreClass(row.number_correct));
+        td.onclick = make_handle_click(row);
+        a(current_tr, td);
+    }
+
+    a(root, table_element);
+    a(root, detail);
+}
+
 function build_all_student_table_summary(root, cohort, table, rows) {
     clear(root);
     a(root, t(e("h3"), cohort + " whole class summary for table: " + table));
@@ -309,6 +354,9 @@ function build_all_student_table_summary(root, cohort, table, rows) {
 
     function make_handle_click(row) {
         return function() {
+            clear(detail);
+            t(detail, "Working...");
+
             fetch_data("results", {id: row.id}).then(function(results) {
                 render_results(detail, row, results);
             });
@@ -380,7 +428,7 @@ function build_all_tables_summary(root, rows) {
     }
 }
 
-function summary_report(root, cohort, student, table) {
+function summary_report(root, cohort, student, name, table) {
     clear(root);
     t(root, "Loading...");
 
@@ -396,6 +444,9 @@ function summary_report(root, cohort, student, table) {
         });
     } else if(student != "-" && table == "-") {
         // summary for a given student across all tables
+        fetch_data("student_table_summary", {student_id: student}).then(function(rows) {
+            build_student_table_summary(root, name, rows);
+        });
     } else {
         // summary for a given student for a given table
     }
@@ -453,7 +504,7 @@ function build_ui(cohorts, tables) {
     a(root, report_area);
 
     summary_btn.onclick = function() {
-        summary_report(report_area, cohort_select.value, student_select.value, table_select.value);
+        summary_report(report_area, cohort_select.value, student_select.value, student_select.selectedOptions[0].text, table_select.value);
     };
 
 }
