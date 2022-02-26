@@ -449,6 +449,7 @@ function summary_report(root, cohort, student, name, table) {
         });
     } else {
         // summary for a given student for a given table
+        t(root, "Not implemented")
     }
 }
 
