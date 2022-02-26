@@ -82,13 +82,13 @@ if(array_key_exists("q", $_REQUEST)) {
         $sql = "select distinct times_table from results order by times_table";
     } else if($op == "all_student_table_summary") {
         $result_type = SQLITE3_ASSOC;
-        $sql = "select id, name, times_table, number_correct, time_taken, inserted_at from results where times_table=:times_table order by trim(upper(name)), inserted_at";
-        $args = array("times_table" => $_REQUEST["table"]);
+        $sql = "select r.id, first_name||' '||last_name name, times_table, number_correct, time_taken, inserted_at from results r join students s on s.id=student_id where cohort=:cohort and times_table=:times_table order by last_name, first_name, inserted_at";
+        $args = array("times_table" => $_REQUEST["table"], "cohort" => $_REQUEST["cohort"]);
     } else if($op == "all_tables_summary") {
         $result_type = SQLITE3_ASSOC;
         $sql = "select n.id as student_id, n.first_name||' '||n.last_name name, d1.correct as d01, d2.correct as d02, d3.correct as d03, d4.correct as d04, d5.correct as d05, d6.correct as d06,
 d7.correct as d07, d8.correct as d08, d9.correct as d09, d10.correct as d10, d11.correct as d11, d12.correct as d12 from
-(select id, first_name, last_name name from students where cohort=:cohort) as n
+(select id, first_name, last_name from students where cohort=:cohort) as n
 left join (select student_id, max(number_correct) correct from results where times_table=1 group by student_id) as d1 on n.id=d1.student_id
 left join (select student_id, max(number_correct) correct from results where times_table=2 group by student_id) as d2 on n.id=d2.student_id
 left join (select student_id, max(number_correct) correct from results where times_table=3 group by student_id) as d3 on n.id=d3.student_id
@@ -101,6 +101,7 @@ left join (select student_id, max(number_correct) correct from results where tim
 left join (select student_id, max(number_correct) correct from results where times_table=10 group by student_id) as d10 on n.id=d10.student_id
 left join (select student_id, max(number_correct) correct from results where times_table=11 group by student_id) as d11 on n.id=d11.student_id
 left join (select student_id, max(number_correct) correct from results where times_table=12 group by student_id) as d12 on n.id=d12.student_id";
+        $args = array("cohort" => $_REQUEST["cohort"]);
     } else if($op == "results") {
         $result_type = SQLITE3_ASSOC;
         $sql = "select * from answers where result_id=:id order by id";

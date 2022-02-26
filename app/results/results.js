@@ -220,8 +220,12 @@ function fetch_data(query, options) {
     return ajax("GET", "../db.php", params);
 }
 
-function fetch_names() {
-    return fetch_data("names");
+function fetch_cohorts() {
+    return fetch_data("cohorts");
+}
+
+function fetch_names(cohort) {
+    return fetch_data("names", {cohort: cohort});
 }
 
 function fetch_tables() {
@@ -246,7 +250,7 @@ function render_results(root, result, rows) {
     clear(root);
     var date = new Date(result.inserted_at * 1000);
 
-    a(root, t(e("h3"), "Details for " + result.name + " table " + result.divide_by + " entered at " + date.toLocaleString()));
+    a(root, t(e("h3"), "Details for " + result.name + " table " + result.times_table + " entered at " + date.toLocaleString()));
 
     var table = e("table");
     var tr = e("tr");
@@ -292,9 +296,9 @@ function scoreClass(correct) {
     return "green";
 }
 
-function build_all_student_table_summary(root, table, rows) {
+function build_all_student_table_summary(root, cohort, table, rows) {
     clear(root);
-    a(root, t(e("h3"), "Whole class summary for table: " + table));
+    a(root, t(e("h3"), cohort + " whole class summary for table: " + table));
 
     order_rows_by_last_name(rows);
 
@@ -376,19 +380,19 @@ function build_all_tables_summary(root, rows) {
     }
 }
 
-function summary_report(root, student, table) {
+function summary_report(root, cohort, student, table) {
     clear(root);
     t(root, "Loading...");
 
     if(student == "-" && table == "-") {
         // summary for all students across all tables
-        fetch_data("all_tables_summary").then(function(rows) {
+        fetch_data("all_tables_summary", {cohort: cohort}).then(function(rows) {
             build_all_tables_summary(root, rows);
         });
     } else if(student == "-" && table != "-") {
         // summary for all students for a given table
-        fetch_data("all_student_table_summary", {table: table}).then(function(rows) {
-            build_all_student_table_summary(root, table, rows);
+        fetch_data("all_student_table_summary", {cohort: cohort, table: table}).then(function(rows) {
+            build_all_student_table_summary(root, cohort, table, rows);
         });
     } else if(student != "-" && table == "-") {
         // summary for a given student across all tables
@@ -397,20 +401,40 @@ function summary_report(root, student, table) {
     }
 }
 
-function build_ui(names, tables) {
+function build_ui(cohorts, tables) {
     var root = f("app");
     clear(root);
 
     var i;
     var param_row = e("div");
+
+    a(param_row, t(e("label"), "Choose a cohort:"));
+    var cohort_select = e("select", {class: "margin-right-1"});
+    for(i=0; i<cohorts.length; i++) {
+        var cohort = cohorts[i][0];
+        a(cohort_select, t(e("option", {value: cohort}), cohort));
+    }
+    a(param_row, cohort_select);
+
     a(param_row, t(e("label"), "Choose a student:"));
     var student_select = e("select", {class: "margin-right-1"});
-    a(student_select, t(e("option", {value: "-"}), "All Students"));
-    for(i=0; i<names.length; i++) {
-        var name = names[i][0];
-        a(student_select, t(e("option", {value: name}), name));
-    }
     a(param_row, student_select);
+
+    function load_students() {
+        fetch_names(cohort_select.value).then(function(names) {
+            student_select.innerHTML = "";
+            a(student_select, t(e("option", {value: "-"}), "All Students"));
+            for(i=0; i<names.length; i++) {
+                a(student_select, t(e("option", {value: names[i][0]}), names[i][1]));
+            }
+        });
+    }
+
+    cohort_select.onchange = load_students;
+
+    if(cohorts.length > 0) {
+        load_students();
+    }
 
     a(param_row, t(e("label"), "Times Table:"));
     var table_select = e("select", {class: "margin-right-1"});
@@ -429,9 +453,9 @@ function build_ui(names, tables) {
     a(root, report_area);
 
     summary_btn.onclick = function() {
-        summary_report(report_area, student_select.value, table_select.value);
+        summary_report(report_area, cohort_select.value, student_select.value, table_select.value);
     };
 
 }
 
-when(fetch_names(), fetch_tables()).then(build_ui);
+when(fetch_cohorts(), fetch_tables()).then(build_ui);
