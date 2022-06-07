@@ -48,7 +48,8 @@ function e(type, atts) {
 }
 
 function addClass(e, c) {
-    e.setAttribute("class", e.getAttribute("class") + " " + c);
+    var existing = e.getAttribute("class");
+    e.setAttribute("class",  existing == null ? c : existing + " " + c);
 
     return e;
 }
@@ -213,6 +214,22 @@ function ajax(method, url, obj) {
 
     return result;
 }
+
+// excel export adapted from here: https://javascript.tutorialink.com/how-to-export-an-html-table-as-a-xlsx-file/
+
+function make_export_link(name, table, link) {
+    var uri = 'data:application/vnd.ms-excel;base64,',
+      template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>{table}</body></html>',
+      base64 = function(s) {
+        return window.btoa(unescape(encodeURIComponent(s)))
+      };
+
+    var data = template.replace("{worksheet}", name).replace("{table}", table.outerHTML);
+    link.download = "export.xls";
+    link.href = uri + base64(data);
+}
+
+// data access methods
 
 function fetch_data(query, options) {
     var now = new Date();
@@ -383,9 +400,23 @@ function build_all_student_table_summary(root, cohort, table, rows) {
     a(root, detail);
 }
 
-function build_all_tables_summary(root, rows) {
+function build_all_tables_summary(root, rows, report) {
     clear(root);
-    a(root, t(e("h3"), "Whole class summary for all tables"));
+    var min;
+    var max;
+    var title;
+
+    if(report == '-') {
+        a(root, t(e("h3"), "Whole class summary for all tables"));
+        min = 1;
+        max = 12;
+        title = "All Tables";
+    } else {
+        a(root, t(e("h3"), "Whole class summary for tables 2 through 10"));
+        min = 2;
+        max = 10;
+        title = "Tables 2-10";
+    }
 
     if(rows.length == 0) {
         var div = t(e("div"), "No data found");
@@ -398,10 +429,12 @@ function build_all_tables_summary(root, rows) {
         var i, j;
         var th = h(e("th"), "&nbsp;");
         a(tr, th);
-        for(i=1; i<=12; i++) {
+        for(i=min; i<=max; i++) {
             th = t(e("th"), i);
             a(tr, th);
         }
+        a(tr, t(e("th"), "Total"));
+
         a(table, tr);
 
         for(i=0; i<rows.length; i++) {
@@ -409,22 +442,30 @@ function build_all_tables_summary(root, rows) {
             tr = e("tr");
             a(tr, t(e("th"), row.name));
 
-            for(j=1; j<=12; j++) {
+            var total = 0;
+            for(j=min; j<=max; j++) {
                 var key = "d" + (j<10 ? "0" + j : j);
                 var score = row[key];
 
                 if(score === null) {
                     score = "-";
+                } else {
+                    total = total + Number(score);
                 }
 
                 var td = addClass(t(e("td", {align: score == "-" ? "center" : "right"}), score), scoreClass(score));
                 a(tr, td);
             }
+            a(tr, t(e("td", {align: "right"}), total));
 
             a(table, tr);
         }
 
         a(root, table);
+
+        var link = t(e("a"), "Export");
+        make_export_link(title, table, link);
+        a(root, link);
     }
 }
 
@@ -432,10 +473,10 @@ function summary_report(root, cohort, student, name, table) {
     clear(root);
     t(root, "Loading...");
 
-    if(student == "-" && table == "-") {
+    if(student == "-" && (table == "-" || table=='+'))  {
         // summary for all students across all tables
         fetch_data("all_tables_summary", {cohort: cohort}).then(function(rows) {
-            build_all_tables_summary(root, rows);
+            build_all_tables_summary(root, rows, table);
         });
     } else if(student == "-" && table != "-") {
         // summary for all students for a given table
@@ -491,6 +532,7 @@ function build_ui(cohorts, tables) {
     a(param_row, t(e("label"), "Times Table:"));
     var table_select = e("select", {class: "margin-right-1"});
     a(table_select, t(e("option", {value: "-"}), "All Tables"));
+    a(table_select, t(e("option", {value: "+"}), "Tables 2 to 10"));
     for(i=0; i<tables.length; i++) {
         var table = tables[i][0];
         a(table_select, t(e("option", {value: table}), table));
