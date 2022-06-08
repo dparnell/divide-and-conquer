@@ -14,7 +14,7 @@ window.showMenu = function(dlg, result) {
         a(dlg, btn);
     }
 
-    for(var i = 2; i <= 12; i++) {
+    for(var i = 1; i <= 12; i++) {
         make_menu_item(i);
     }
 
