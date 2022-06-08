@@ -412,10 +412,10 @@ function build_all_tables_summary(root, rows, report) {
         max = 12;
         title = "All Tables";
     } else {
-        a(root, t(e("h3"), "Whole class summary for tables 2 through 10"));
-        min = 2;
+        a(root, t(e("h3"), "Whole class summary for tables 1 through 10"));
+        min = 1;
         max = 10;
-        title = "Tables 2-10";
+        title = "Tables 1-10";
     }
 
     if(rows.length == 0) {
@@ -532,7 +532,7 @@ function build_ui(cohorts, tables) {
     a(param_row, t(e("label"), "Times Table:"));
     var table_select = e("select", {class: "margin-right-1"});
     a(table_select, t(e("option", {value: "-"}), "All Tables"));
-    a(table_select, t(e("option", {value: "+"}), "Tables 2 to 10"));
+    a(table_select, t(e("option", {value: "+"}), "Tables 1 to 10"));
     for(i=0; i<tables.length; i++) {
         var table = tables[i][0];
         a(table_select, t(e("option", {value: table}), table));
