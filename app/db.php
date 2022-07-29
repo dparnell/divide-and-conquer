@@ -86,8 +86,24 @@ if(array_key_exists("q", $_REQUEST)) {
         $args = array("times_table" => $_REQUEST["table"], "cohort" => $_REQUEST["cohort"]);
     } else if($op == "student_table_summary") {
         $result_type = SQLITE3_ASSOC;
-        $sql = "select id, times_table, number_correct, time_taken, inserted_at from results where student_id=:student_id  order by times_table, inserted_at";
+        if(array_key_exists("table", $_REQUEST)) {
+            $table = $_REQUEST["table"];
+            if($table == "+") {
+                $fragment = " and (times_table>=1 and times_table<=10) ";
+                $table = null;
+            } else {
+                $fragment = " and times_table=:table ";
+            }
+        } else {
+            $table = null;
+            $fragment = "";
+        }
+           
+        $sql = "select id, times_table, number_correct, time_taken, inserted_at from results where student_id=:student_id ".$fragment." order by times_table, inserted_at";
         $args = array("student_id" => $_REQUEST["student_id"]);
+        if($table != null) {
+            $args["table"] = $table;
+        }
     } else if($op == "all_tables_summary") {
         $result_type = SQLITE3_ASSOC;
         $sql = "select n.id as student_id, n.first_name||' '||n.last_name name, d1.correct as d01, d2.correct as d02, d3.correct as d03, d4.correct as d04, d5.correct as d05, d6.correct as d06,

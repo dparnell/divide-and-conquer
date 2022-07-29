@@ -400,12 +400,34 @@ function build_all_student_table_summary(root, cohort, table, rows) {
     a(root, detail);
 }
 
+function select_value(value, select) {
+    var L = select.options.length;
+    for(var i=0; i<L; i++) {
+	if(select.options[i].text == value) {
+	    select.selectedIndex = i;
+	    break;
+	}
+    }
+}
+
 function build_all_tables_summary(root, rows, report) {
     clear(root);
     var min;
     var max;
     var title;
 
+    function make_handle_click(name, table) {
+	return function() {
+	    clear(root);
+	    t(root, "Working...");
+
+	    select_value(name, f("students"));	    
+	    select_value(table, f("tables"));
+
+	    f("summary").click();
+	};
+    }
+    
     if(report == '-') {
         a(root, t(e("h3"), "Whole class summary for all tables"));
         min = 1;
@@ -455,6 +477,10 @@ function build_all_tables_summary(root, rows, report) {
 
                 var td = addClass(t(e("td", {align: score == "-" ? "center" : "right"}), score), scoreClass(score));
                 a(tr, td);
+
+		if(score != "-") {
+		    td.onclick = make_handle_click(row.name, j);
+		}
             }
             a(tr, t(e("td", {align: "right"}), total));
 
@@ -490,7 +516,9 @@ function summary_report(root, cohort, student, name, table) {
         });
     } else {
         // summary for a given student for a given table
-        t(root, "Not implemented")
+        fetch_data("student_table_summary", {student_id: student, table: table}).then(function(rows) {
+            build_student_table_summary(root, name, rows);
+        });
     }
 }
 
@@ -502,7 +530,7 @@ function build_ui(cohorts, tables) {
     var param_row = e("div");
 
     a(param_row, t(e("label"), "Choose a cohort:"));
-    var cohort_select = e("select", {class: "margin-right-1"});
+    var cohort_select = e("select", {class: "margin-right-1", id: "cohorts"});
     for(i=0; i<cohorts.length; i++) {
         var cohort = cohorts[i][0];
         a(cohort_select, t(e("option", {value: cohort}), cohort));
@@ -510,7 +538,7 @@ function build_ui(cohorts, tables) {
     a(param_row, cohort_select);
 
     a(param_row, t(e("label"), "Choose a student:"));
-    var student_select = e("select", {class: "margin-right-1"});
+    var student_select = e("select", {class: "margin-right-1", id: "students"});
     a(param_row, student_select);
 
     function load_students() {
@@ -530,7 +558,7 @@ function build_ui(cohorts, tables) {
     }
 
     a(param_row, t(e("label"), "Times Table:"));
-    var table_select = e("select", {class: "margin-right-1"});
+    var table_select = e("select", {class: "margin-right-1", id: "tables"});
     a(table_select, t(e("option", {value: "-"}), "All Tables"));
     a(table_select, t(e("option", {value: "+"}), "Tables 1 to 10"));
     for(i=0; i<tables.length; i++) {
@@ -539,7 +567,7 @@ function build_ui(cohorts, tables) {
     }
     a(param_row, table_select);
 
-    var summary_btn = t(e("button"), "Summary");
+    var summary_btn = t(e("button", {id: "summary"}), "Summary");
     a(param_row, summary_btn);
 
     a(root, param_row);
